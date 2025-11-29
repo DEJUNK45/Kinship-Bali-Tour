@@ -137,11 +137,13 @@ const RatingCircles: React.FC<{ rating: number }> = ({ rating }) => {
 export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({ type, onBack }) => {
     const [selectedCategory, setSelectedCategory] = useState('Semua');
     const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
+    const [selectedPrice, setSelectedPrice] = useState('Semua');
     
     // Reset filters when type changes
     useEffect(() => {
         setSelectedCategory('Semua');
         setSelectedFeatures([]);
+        setSelectedPrice('Semua');
     }, [type]);
 
     const data = type === 'hotels' ? HOTELS_DATA : RESTAURANTS_DATA;
@@ -154,15 +156,40 @@ export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({ type, onBack }
         ? ['Infinity Pool', 'Tepi Pantai', 'Eco-friendly', 'Ramah Keluarga', 'Spa']
         : ['Outdoor', 'Romantis', 'Pemandangan Sawah', 'Murah', 'Nightlife'];
 
+    const priceOptions = ['Semua', '$', '$$', '$$$', '$$$$'];
+
+    // Helper to normalize price for filtering
+    const getPriceLevel = (item: Place): string => {
+        if (type === 'restaurants') {
+            return item.priceRange || '$';
+        }
+        
+        // For hotels, convert numeric range to symbols
+        // Logic: < 2M: $, 2M-3.5M: $$, 3.5M-5M: $$$, >5M: $$$$
+        if (!item.priceRange) return '$';
+        const priceString = item.priceRange.replace(/[^0-9]/g, '');
+        const price = parseInt(priceString, 10);
+
+        if (price < 2000000) return '$';
+        if (price < 3500000) return '$$';
+        if (price < 5000000) return '$$$';
+        return '$$$$';
+    };
+
     const filteredData = useMemo(() => {
         return data.filter(item => {
             const categoryMatch = selectedCategory === 'Semua' || item.category === selectedCategory;
+            
             // Check if ALL selected features are present in item.tags
             const featuresMatch = selectedFeatures.length === 0 || 
                 selectedFeatures.every(f => item.tags.includes(f));
-            return categoryMatch && featuresMatch;
+            
+            const itemPriceLevel = getPriceLevel(item);
+            const priceMatch = selectedPrice === 'Semua' || itemPriceLevel === selectedPrice;
+
+            return categoryMatch && featuresMatch && priceMatch;
         });
-    }, [data, selectedCategory, selectedFeatures]);
+    }, [data, selectedCategory, selectedFeatures, selectedPrice, type]);
 
     const toggleFeature = (feature: string) => {
         setSelectedFeatures(prev => 
@@ -243,12 +270,32 @@ export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({ type, onBack }
                         </div>
                     </div>
 
+                    {/* Price Range */}
+                    <div>
+                        <h3 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-3">Rentang Harga</h3>
+                        <div className="flex flex-wrap gap-2">
+                            {priceOptions.map(price => (
+                                <button
+                                    key={price}
+                                    onClick={() => setSelectedPrice(price)}
+                                    className={`px-4 py-2 rounded-lg text-sm font-bold border transition-all duration-200 ${
+                                        selectedPrice === price
+                                        ? 'bg-teal-600 border-teal-600 text-white shadow-md'
+                                        : 'bg-white border-stone-200 text-stone-600 hover:border-teal-500 hover:text-teal-600'
+                                    }`}
+                                >
+                                    {price}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
                     {/* Results Count */}
                     <div className="pt-4 border-t border-stone-100 flex justify-between items-center text-sm text-stone-500">
                         <span>Menampilkan {filteredData.length} dari {data.length} rekomendasi</span>
-                        {(selectedCategory !== 'Semua' || selectedFeatures.length > 0) && (
+                        {(selectedCategory !== 'Semua' || selectedFeatures.length > 0 || selectedPrice !== 'Semua') && (
                             <button 
-                                onClick={() => {setSelectedCategory('Semua'); setSelectedFeatures([]);}}
+                                onClick={() => {setSelectedCategory('Semua'); setSelectedFeatures([]); setSelectedPrice('Semua');}}
                                 className="text-teal-600 hover:text-teal-800 font-medium"
                             >
                                 Reset Filter
@@ -327,7 +374,7 @@ export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({ type, onBack }
                             </svg>
                             <p className="text-lg text-stone-500">Tidak ada hasil yang sesuai dengan filter Anda.</p>
                             <button 
-                                onClick={() => {setSelectedCategory('Semua'); setSelectedFeatures([]);}}
+                                onClick={() => {setSelectedCategory('Semua'); setSelectedFeatures([]); setSelectedPrice('Semua');}}
                                 className="mt-2 text-teal-600 font-medium hover:text-teal-700"
                             >
                                 Hapus semua filter

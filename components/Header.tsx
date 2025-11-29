@@ -11,10 +11,17 @@ const FrangipaniIcon: React.FC<{ className?: string }> = ({ className }) => (
     </svg>
 );
 
+interface NavItem {
+    label: string;
+    id: string;
+    icon: React.ReactNode;
+    comingSoon?: boolean;
+}
+
 export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const navItems = [
+  const navItems: NavItem[] = [
     { 
       label: 'Jelajah', 
       id: 'home', 
@@ -32,6 +39,15 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
         </svg>
       )
+    },
+    { 
+        label: 'Tiket Wisata', 
+        id: 'tickets', 
+        icon: (
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+          </svg>
+        )
     },
     { 
       label: 'Hotel', 
@@ -92,8 +108,8 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
             {navItems.map((item) => (
               <button
                 key={item.id}
-                onClick={() => handleNavClick(item.id, (item as any).comingSoon)}
-                className="flex items-center px-4 py-2 rounded-full hover:bg-stone-100 transition-colors text-stone-700 hover:text-stone-900 text-sm font-medium gap-2"
+                onClick={() => handleNavClick(item.id, item.comingSoon)}
+                className="flex items-center px-3 py-2 rounded-full hover:bg-stone-100 transition-colors text-stone-700 hover:text-stone-900 text-sm font-medium gap-1.5"
               >
                 {item.icon}
                 <span>{item.label}</span>
@@ -130,7 +146,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
             {navItems.map((item) => (
                <button
                 key={item.id}
-                onClick={() => handleNavClick(item.id, (item as any).comingSoon)}
+                onClick={() => handleNavClick(item.id, item.comingSoon)}
                 className="flex items-center p-3 rounded-lg hover:bg-stone-50 text-stone-700 font-medium"
               >
                 <span className="mr-3 text-stone-500">{item.icon}</span>

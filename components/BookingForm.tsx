@@ -121,27 +121,55 @@ export const BookingForm: React.FC<BookingFormProps> = ({ preferences, vehicle, 
                 </div>
             </div>
             
-            {/* Vehicle Summary */}
-             <div className="bg-stone-50 p-4 rounded-lg border border-stone-200">
-                <h4 className="font-bold text-stone-800 mb-2">Pilihan Transportasi</h4>
-                {vehicle ? (
-                    <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-white rounded border border-stone-200 overflow-hidden">
-                            <img src={vehicle.imageUrl} alt={vehicle.name} className="w-full h-full object-cover"/>
-                        </div>
-                        <div>
-                            <p className="font-medium text-stone-800">{vehicle.name}</p>
-                            <p className="text-xs text-stone-500">{vehicle.price.toLocaleString('id-ID', {style:'currency', currency:'IDR'})} x {preferences.duration} hari</p>
-                        </div>
-                    </div>
-                ) : (
-                    <p className="text-sm text-stone-500 italic">Tidak ada kendaraan yang dipilih.</p>
-                )}
-            </div>
-
             <div>
                 <label htmlFor="requests" className="block text-sm font-medium text-stone-700">Permintaan Khusus (Opsional)</label>
                 <textarea id="requests" value={requests} onChange={e => setRequests(e.target.value)} rows={3} className="mt-1 w-full p-3 border border-stone-300 rounded-lg focus:ring-2 focus:ring-teal-500" />
+            </div>
+
+            {/* Order Summary Section */}
+             <div className="bg-stone-50 p-5 rounded-xl border border-stone-200 mt-6">
+                <h4 className="font-bold text-stone-800 mb-4 border-b border-stone-200 pb-2">Ringkasan Pesanan</h4>
+                
+                {/* Vehicle Details */}
+                {vehicle ? (
+                    <div className="flex items-start gap-3 mb-4">
+                        <div className="w-16 h-16 bg-white rounded-lg border border-stone-200 overflow-hidden flex-shrink-0">
+                            <img src={vehicle.imageUrl} alt={vehicle.name} className="w-full h-full object-cover"/>
+                        </div>
+                        <div>
+                            <p className="font-bold text-stone-800">{vehicle.name}</p>
+                            <p className="text-xs text-stone-500">{vehicle.type === 'scooter' ? 'Sewa Motor' : 'Mobil + Supir'}</p>
+                            <p className="text-xs text-stone-600 mt-1">{vehicle.price.toLocaleString('id-ID', {style:'currency', currency:'IDR'})} x {preferences.duration} hari</p>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="mb-4 text-sm text-stone-500 italic flex items-center">
+                        <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        Tidak ada kendaraan yang dipilih (Tour Only)
+                    </div>
+                )}
+
+                {/* Price Breakdown */}
+                <div className="space-y-2 text-sm text-stone-600 border-t border-stone-200 pt-3">
+                    <div className="flex justify-between">
+                        <span>Paket Wisata ({preferences.duration} hari, {preferences.travelers} pax)</span>
+                        <span>{priceDetails.subtotal.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}</span>
+                    </div>
+                    {vehicle && (
+                        <div className="flex justify-between">
+                            <span>Sewa Kendaraan</span>
+                            <span>{priceDetails.vehicleCost.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}</span>
+                        </div>
+                    )}
+                    <div className="flex justify-between">
+                        <span>Biaya Layanan (5%)</span>
+                        <span>{priceDetails.serviceFee.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}</span>
+                    </div>
+                    <div className="flex justify-between font-bold text-stone-800 text-base pt-2 border-t border-stone-200 mt-2">
+                        <span>Total Estimasi</span>
+                        <span className="text-teal-700">{priceDetails.total.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}</span>
+                    </div>
+                </div>
             </div>
             
             {error && <p className="text-red-500 text-sm">{error}</p>}
@@ -150,7 +178,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({ preferences, vehicle, 
                  <button type="button" onClick={onCancel} className="flex-1 bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold py-3 px-6 rounded-lg transition-colors">
                     Kembali
                 </button>
-                <button type="submit" className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg transition-colors">
+                <button type="submit" className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-lg hover:shadow-orange-200 transform hover:-translate-y-0.5">
                     Lanjutkan ke Pembayaran
                 </button>
             </div>

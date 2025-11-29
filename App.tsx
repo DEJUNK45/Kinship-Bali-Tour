@@ -8,13 +8,14 @@ import { Footer } from './components/Footer';
 import { BookingForm } from './components/BookingForm';
 import { BookingConfirmation } from './components/BookingConfirmation';
 import { RentalMarketplace } from './components/RentalMarketplace';
+import { TicketMarketplace } from './components/TicketMarketplace';
 import { AdminLogin } from './components/AdminLogin';
 import { AdminDashboard } from './components/AdminDashboard';
 import { PlaceholderPage } from './components/PlaceholderPage';
 import { ItineraryPreferences, Itinerary, DailyPlan, Vehicle, BookingDetails } from './types';
 import { generateItinerary } from './services/geminiService';
 
-type AppView = 'home' | 'rentals' | 'admin-login' | 'admin-dashboard' | 'hotels' | 'restaurants' | 'booking';
+type AppView = 'home' | 'rentals' | 'tickets' | 'admin-login' | 'admin-dashboard' | 'hotels' | 'restaurants' | 'booking';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<AppView>('home');
@@ -118,6 +119,10 @@ const App: React.FC = () => {
           case 'rentals':
               handleViewRentals('all');
               break;
+          case 'tickets':
+              setCurrentView('tickets');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+              break;
           case 'hotels':
               setCurrentView('hotels');
               window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -164,6 +169,8 @@ const App: React.FC = () => {
                 initialFilter={rentalFilter}
                 onSelectVehicle={itinerary ? handleSelectVehicleForTrip : undefined} // Only pass selection handler if we have an itinerary
             />
+        ) : currentView === 'tickets' ? (
+            <TicketMarketplace onBack={() => setCurrentView('home')} />
         ) : currentView === 'hotels' ? (
             <PlaceholderPage type="hotels" onBack={() => setCurrentView('home')} />
         ) : currentView === 'restaurants' ? (

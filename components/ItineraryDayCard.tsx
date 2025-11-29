@@ -1,7 +1,73 @@
 
 import React, { useState, useEffect } from 'react';
-import { DailyPlan, Activity } from '../types';
+import { DailyPlan, Activity, Ticket } from '../types';
 import { WeatherWidget } from './WeatherWidget';
+import { findMatchingTicket } from '../services/ticketService';
+
+const TicketDetailModal: React.FC<{ ticket: Ticket; onClose: () => void }> = ({ ticket, onClose }) => {
+    const handleBook = () => {
+        const message = `Halo Kinship Bali Tour, saya tertarik memesan tiket: ${ticket.title} seharga IDR ${ticket.price.toLocaleString('id-ID')}. Mohon info ketersediaannya.`;
+        const url = `https://wa.me/6281234567890?text=${encodeURIComponent(message)}`;
+        window.open(url, '_blank');
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
+            <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-fade-in-up" onClick={e => e.stopPropagation()}>
+                <div className="relative h-64">
+                    <img src={ticket.image} alt={ticket.title} className="w-full h-full object-cover" />
+                    <button onClick={onClose} className="absolute top-4 right-4 bg-white/80 p-2 rounded-full hover:bg-white text-stone-800 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                    <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-lg text-sm font-bold text-stone-800 shadow-sm uppercase tracking-wide">
+                        {ticket.category}
+                    </div>
+                </div>
+                
+                <div className="p-8">
+                    <div className="flex justify-between items-start mb-4">
+                        <h2 className="text-2xl font-bold font-serif text-stone-800">{ticket.title}</h2>
+                        <div className="flex items-center gap-1 text-yellow-500 font-bold">
+                            <span>{ticket.rating}</span>
+                            <svg className="w-5 h-5 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-4 text-sm text-stone-500 mb-6">
+                        <div className="flex items-center gap-1">
+                            <svg className="w-4 h-4 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                            {ticket.location}
+                        </div>
+                        <div className="flex items-center gap-1">
+                            <svg className="w-4 h-4 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            {ticket.duration}
+                        </div>
+                    </div>
+
+                    <p className="text-stone-600 leading-relaxed mb-8">
+                        {ticket.description}
+                    </p>
+
+                    <div className="flex items-center justify-between border-t border-stone-100 pt-6">
+                        <div>
+                            <p className="text-xs text-stone-400 uppercase font-bold">Harga Tiket</p>
+                            <p className="text-2xl font-bold text-teal-700">IDR {ticket.price.toLocaleString('id-ID')}</p>
+                        </div>
+                        <button 
+                            onClick={handleBook}
+                            className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg hover:shadow-green-200 transition-all transform hover:-translate-y-0.5 flex items-center gap-2"
+                        >
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                            Konfirmasi via WhatsApp
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 const iconMap: Record<Activity['type'], React.ReactNode> = {
     Dining: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a6 6 0 00-6 6c0 1.957.942 3.713 2.394 4.789V16.5a.5.5 0 00.5.5h6a.5.5 0 00.5-.5v-3.711A5.968 5.968 0 0016 8a6 6 0 00-6-6zM8.5 6a.5.5 0 01.5-.5h2a.5.5 0 01.5.5v2a.5.5 0 01-.5.5h-2a.5.5 0 01-.5-.5V6zM5 8c0-1.05.37-2.02.97-2.828A.5.5 0 016.5 5h7a.5.5 0 01.53.672A3.98 3.98 0 0115 8H5zm1 5.5a.5.5 0 01.5-.5h6a.5.5 0 01.5.5v1h-7v-1z" /></svg>,
@@ -85,7 +151,8 @@ const getActivityImage = (activityName: string): string | null => {
 
   for (const key in imageMap) {
     if (name.includes(key)) {
-      return `https://images.unsplash.com/photo-${imageMap[key]}?auto=format&fit=crop&w=300&h=200&q=80`;
+      // Optimized quality q=60 for thumbnails to improve performance
+      return `https://images.unsplash.com/photo-${imageMap[key]}?auto=format&fit=crop&w=300&h=200&q=60`;
     }
   }
   
@@ -105,7 +172,8 @@ const StarRating: React.FC<{ rating: number; onRate: (rating: number) => void }>
           onMouseEnter={() => setHoverRating(star)}
           onMouseLeave={() => setHoverRating(0)}
           className="p-0.5 focus:outline-none transition-transform hover:scale-110"
-          aria-label={`Rate ${star} stars`}
+          aria-label={`Beri bintang ${star}`}
+          title={`Beri bintang ${star}`}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -127,7 +195,7 @@ const ActivityThumbnail: React.FC<{ src: string; alt: string }> = ({ src, alt })
     const [isLoaded, setIsLoaded] = useState(false);
 
     return (
-        <div className="mt-4 sm:mt-0 sm:ml-4 flex-shrink-0 relative w-full sm:w-40 h-48 sm:h-28 bg-stone-200 rounded-lg overflow-hidden shadow-md">
+        <div className="mt-4 sm:mt-0 sm:ml-4 flex-shrink-0 relative w-full sm:w-40 h-48 sm:h-28 bg-stone-200 rounded-lg overflow-hidden shadow-md group">
             {!isLoaded && (
                 <div className="absolute inset-0 flex items-center justify-center bg-stone-200 animate-pulse">
                     <svg className="w-8 h-8 text-stone-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -138,8 +206,9 @@ const ActivityThumbnail: React.FC<{ src: string; alt: string }> = ({ src, alt })
             <img 
                 src={src} 
                 alt={alt} 
-                className={`w-full h-full object-cover transition-all duration-500 hover:scale-105 ${isLoaded ? 'opacity-100' : 'opacity-0'}`} 
+                className={`w-full h-full object-cover transition-all duration-700 ease-in-out group-hover:scale-110 group-hover:brightness-110 ${isLoaded ? 'opacity-100' : 'opacity-0'}`} 
                 loading="lazy"
+                decoding="async"
                 onLoad={() => setIsLoaded(true)}
             />
         </div>
@@ -148,12 +217,12 @@ const ActivityThumbnail: React.FC<{ src: string; alt: string }> = ({ src, alt })
 
 export const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({ dayPlan, tripStartDate, isEditing, onItineraryChange }) => {
     const [ratings, setRatings] = useState<Record<string, number>>({});
+    const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
 
     useEffect(() => {
         const loadRatings = () => {
             const newRatings: Record<string, number> = {};
             dayPlan.activities.forEach((activity) => {
-                // Generate a unique key based on day and activity name (sanitized)
                 const key = `rating_${dayPlan.day}_${activity.name.replace(/\s+/g, '_').toLowerCase()}`;
                 const saved = localStorage.getItem(key);
                 if (saved) {
@@ -190,9 +259,15 @@ export const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({ dayPlan, tri
 
         const formatDate = (d: Date) => d.toISOString().split('T')[0];
 
-        // Link to booking search with dates prepopulated
         const url = `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(hotelName + ' Bali')}&checkin=${formatDate(checkIn)}&checkout=${formatDate(checkOut)}&group_adults=2&no_rooms=1&group_children=0`;
         window.open(url, '_blank');
+    };
+
+    const handleScrollToBooking = () => {
+        window.scrollTo({
+            top: document.body.scrollHeight,
+            behavior: 'smooth'
+        });
     };
 
     // Calculate the date for this specific day plan
@@ -201,131 +276,161 @@ export const ItineraryDayCard: React.FC<ItineraryDayCardProps> = ({ dayPlan, tri
     const dateString = currentDate.toISOString().split('T')[0];
     
     return (
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-stone-200 transition-shadow hover:shadow-xl mb-8">
-            <div className="p-6">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-                    <div className="flex items-baseline gap-4">
-                        <span className="bg-teal-600 text-white text-sm font-bold px-3 py-1 rounded-full">Hari {dayPlan.day}</span>
-                        <h3 className="text-2xl md:text-3xl font-bold font-serif text-stone-800">{dayPlan.title}</h3>
-                    </div>
-                    {/* Weather Widget Integration */}
-                    {dayPlan.location && (
-                        <div className="flex-shrink-0">
-                            <WeatherWidget location={dayPlan.location} date={dateString} />
+        <>
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-stone-200 transition-shadow hover:shadow-xl mb-8">
+                <div className="p-6">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+                        <div className="flex items-baseline gap-4">
+                            <span className="bg-teal-600 text-white text-sm font-bold px-3 py-1 rounded-full">Hari {dayPlan.day}</span>
+                            <h3 className="text-2xl md:text-3xl font-bold font-serif text-stone-800">{dayPlan.title}</h3>
                         </div>
-                    )}
-                </div>
-                
-                <p className="mt-2 text-stone-600">{dayPlan.summary}</p>
-            </div>
-            <div className="border-t border-stone-200">
-                <ul className="divide-y divide-stone-200">
-                    {dayPlan.activities.map((activity, index) => {
-                        const imageUrl = getActivityImage(activity.name);
-                        return (
-                            <li key={index} className="p-6 hover:bg-stone-50 transition-colors">
-                                <div className="flex flex-col sm:flex-row gap-4">
-                                    {/* Icon */}
-                                    <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${colorMap[activity.type]}`}>
-                                        {iconMap[activity.type]}
-                                    </div>
-                                    
-                                    {/* Text Content */}
-                                    <div className="flex-grow">
-                                        <div className="flex justify-between items-baseline">
-                                            {isEditing ? (
-                                                <input 
-                                                    type="text"
-                                                    value={activity.name}
-                                                    onChange={(e) => handleActivityChange(index, 'name', e.target.value)}
-                                                    className="font-bold text-lg text-stone-800 w-full p-1 border border-stone-300 rounded-md"
-                                                />
-                                            ) : (
-                                                <h4 className="font-bold text-lg text-stone-800">{activity.name}</h4>
-                                            )}
-                                            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${colorMap[activity.type]} ml-2 flex-shrink-0`}>{activity.type}</span>
-                                        </div>
-                                        {isEditing ? (
-                                            <textarea 
-                                                value={activity.description}
-                                                onChange={(e) => handleActivityChange(index, 'description', e.target.value)}
-                                                rows={2}
-                                                className="mt-1 text-stone-600 w-full p-1 border border-stone-300 rounded-md"
-                                            />
-                                        ) : (
-                                            <p className="mt-1 text-stone-600">{activity.description}</p>
-                                        )}
-
-                                        {/* Time Allocation Indicator */}
-                                        <div className="mt-3 flex items-center gap-3 select-none">
-                                            <div className="w-24 h-1.5 bg-stone-100 rounded-full overflow-hidden" title="Estimasi Durasi">
-                                                <div 
-                                                    className={`h-full rounded-full ${getTimeEstimate(activity.type).color}`} 
-                                                    style={{ width: getTimeEstimate(activity.type).width }}
-                                                ></div>
-                                            </div>
-                                            <span className="text-xs text-stone-400 font-medium flex items-center gap-1">
-                                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                </svg>
-                                                {getTimeEstimate(activity.type).time}
-                                            </span>
-                                        </div>
-                                        
-                                        {!isEditing && (
-                                            <div className="mt-3 flex items-center gap-2">
-                                                <span className="text-xs font-medium text-stone-400 uppercase tracking-wide">Rate:</span>
-                                                <StarRating 
-                                                    rating={ratings[activity.name] || 0} 
-                                                    onRate={(r) => handleRate(activity.name, r)} 
-                                                />
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Thumbnail Image */}
-                                    {imageUrl && !isEditing && (
-                                        <ActivityThumbnail src={imageUrl} alt={activity.name} />
-                                    )}
-                                </div>
-                            </li>
-                        );
-                    })}
-                </ul>
-            </div>
-            
-            {/* Accommodation Section */}
-            {dayPlan.accommodation && (
-                <div className="bg-blue-50 p-6 border-t border-blue-100">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                        <div className="flex gap-4">
-                            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center text-blue-600">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                                </svg>
+                        {/* Weather Widget Integration */}
+                        {dayPlan.location && (
+                            <div className="flex-shrink-0">
+                                <WeatherWidget location={dayPlan.location} date={dateString} />
                             </div>
-                            <div>
-                                <h4 className="text-sm font-bold text-blue-800 uppercase tracking-wider mb-1">Rekomendasi Penginapan</h4>
-                                <h3 className="text-xl font-bold text-stone-800">{dayPlan.accommodation.name}</h3>
-                                <p className="text-stone-600 text-sm mt-1">{dayPlan.accommodation.description}</p>
-                            </div>
-                        </div>
-                        
-                        {!isEditing && (
-                            <button 
-                                onClick={() => handleBookHotel(dayPlan.accommodation!.name)}
-                                className="whitespace-nowrap bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors shadow-sm hover:shadow flex items-center gap-2 text-sm"
-                                title={`Booking ${dayPlan.accommodation.name}`}
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
-                                </svg>
-                                Pesan Hotel
-                            </button>
                         )}
                     </div>
+                    
+                    <p className="mt-2 text-stone-600">{dayPlan.summary}</p>
                 </div>
+                <div className="border-t border-stone-200">
+                    <ul className="divide-y divide-stone-200">
+                        {dayPlan.activities.map((activity, index) => {
+                            const imageUrl = getActivityImage(activity.name);
+                            const matchingTicket = findMatchingTicket(activity.name);
+
+                            return (
+                                <li key={index} className="p-6 hover:bg-stone-50 transition-colors">
+                                    <div className="flex flex-col sm:flex-row gap-4">
+                                        {/* Icon */}
+                                        <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${colorMap[activity.type]}`}>
+                                            {iconMap[activity.type]}
+                                        </div>
+                                        
+                                        {/* Text Content */}
+                                        <div className="flex-grow">
+                                            <div className="flex justify-between items-baseline">
+                                                {isEditing ? (
+                                                    <input 
+                                                        type="text"
+                                                        value={activity.name}
+                                                        onChange={(e) => handleActivityChange(index, 'name', e.target.value)}
+                                                        className="font-bold text-lg text-stone-800 w-full p-1 border border-stone-300 rounded-md"
+                                                    />
+                                                ) : (
+                                                    <h4 className="font-bold text-lg text-stone-800">{activity.name}</h4>
+                                                )}
+                                                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${colorMap[activity.type]} ml-2 flex-shrink-0`}>{activity.type}</span>
+                                            </div>
+                                            {isEditing ? (
+                                                <textarea 
+                                                    value={activity.description}
+                                                    onChange={(e) => handleActivityChange(index, 'description', e.target.value)}
+                                                    rows={2}
+                                                    className="mt-1 text-stone-600 w-full p-1 border border-stone-300 rounded-md"
+                                                />
+                                            ) : (
+                                                <p className="mt-1 text-stone-600">{activity.description}</p>
+                                            )}
+
+                                            {/* Time Allocation Indicator */}
+                                            <div className="mt-3 flex items-center gap-3 select-none">
+                                                <div className="w-24 h-1.5 bg-stone-100 rounded-full overflow-hidden" title="Estimasi Durasi">
+                                                    <div 
+                                                        className={`h-full rounded-full ${getTimeEstimate(activity.type).color}`} 
+                                                        style={{ width: getTimeEstimate(activity.type).width }}
+                                                    ></div>
+                                                </div>
+                                                <span className="text-xs text-stone-400 font-medium flex items-center gap-1">
+                                                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                    {getTimeEstimate(activity.type).time}
+                                                </span>
+                                            </div>
+                                            
+                                            {!isEditing && (
+                                                <div className="mt-3 flex flex-wrap items-center justify-between gap-4">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-xs font-medium text-stone-400 uppercase tracking-wide">Beri Nilai:</span>
+                                                        <StarRating 
+                                                            rating={ratings[activity.name] || 0} 
+                                                            onRate={(r) => handleRate(activity.name, r)} 
+                                                        />
+                                                    </div>
+                                                    
+                                                    {matchingTicket ? (
+                                                        <button
+                                                            onClick={() => setSelectedTicket(matchingTicket)}
+                                                            className="text-xs font-bold text-white bg-orange-500 border border-orange-500 px-3 py-1.5 rounded-full hover:bg-orange-600 transition-colors shadow-sm flex items-center gap-1"
+                                                        >
+                                                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
+                                                            Pesan Tiket
+                                                        </button>
+                                                    ) : (
+                                                        <button
+                                                            onClick={handleScrollToBooking}
+                                                            className="text-xs font-bold text-teal-600 border border-teal-600 px-3 py-1.5 rounded-full hover:bg-teal-50 transition-colors"
+                                                        >
+                                                            Pesan Sekarang
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Thumbnail Image */}
+                                        {imageUrl && !isEditing && (
+                                            <ActivityThumbnail src={imageUrl} alt={activity.name} />
+                                        )}
+                                    </div>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </div>
+                
+                {/* Accommodation Section */}
+                {dayPlan.accommodation && (
+                    <div className="bg-blue-50 p-6 border-t border-blue-100">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                            <div className="flex gap-4">
+                                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center text-blue-600">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 className="text-sm font-bold text-blue-800 uppercase tracking-wider mb-1">Rekomendasi Penginapan</h4>
+                                    <h3 className="text-xl font-bold text-stone-800">{dayPlan.accommodation.name}</h3>
+                                    <p className="text-stone-600 text-sm mt-1">{dayPlan.accommodation.description}</p>
+                                </div>
+                            </div>
+                            
+                            {!isEditing && (
+                                <button 
+                                    onClick={() => handleBookHotel(dayPlan.accommodation!.name)}
+                                    className="whitespace-nowrap bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors shadow-sm hover:shadow flex items-center gap-2 text-sm"
+                                    title={`Booking ${dayPlan.accommodation.name}`}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                                    </svg>
+                                    Pesan Hotel
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {selectedTicket && (
+                <TicketDetailModal 
+                    ticket={selectedTicket} 
+                    onClose={() => setSelectedTicket(null)} 
+                />
             )}
-        </div>
+        </>
     );
 };

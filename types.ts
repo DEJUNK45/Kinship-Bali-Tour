@@ -59,6 +59,19 @@ export interface Vehicle {
   reviews?: Review[]; // New: Mock reviews
 }
 
+export interface Ticket {
+    id: string;
+    title: string;
+    category: 'Adventure' | 'Culture' | 'Attraction' | 'Nature' | 'Water Sport';
+    location: string;
+    price: number;
+    image: string;
+    description: string;
+    rating: number;
+    reviewsCount: number;
+    duration: string;
+}
+
 export interface BookingDetails {
     fullName: string;
     email: string;
